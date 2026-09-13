@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "inference-validation-lab"
 version = "0.1.0"
 requires-python = ">=3.10"
-dependencies = ["numpy", "torch>=2.9", "onnx", "onnxscript"]
+dependencies = ["numpy", "torch>=2.9", "onnx", "onnxscript", "onnxruntime"]
 
 [project.optional-dependencies]
 test = ["pytest"]

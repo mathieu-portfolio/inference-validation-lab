@@ -15,6 +15,17 @@ def export_onnx(
     Use a representative batch of at least two samples so the exporter can
     trace a dynamic batch dimension. The model is moved to CPU and eval mode.
     """
+    return _export_onnx(model, inputs, output_path, output_names=["output"])
+
+
+def _export_onnx(
+    model: nn.Module,
+    inputs: torch.Tensor,
+    output_path: str | Path,
+    *,
+    output_names: list[str],
+) -> Path:
+    """Shared export mechanics for normal and explicit debug outputs."""
     if inputs.ndim < 1 or inputs.shape[0] < 2:
         raise ValueError("Use a representative input with batch size at least 2.")
     output_path = Path(output_path)
@@ -25,7 +36,7 @@ def export_onnx(
             (inputs.cpu(),),
             output_path,
             input_names=["input"],
-            output_names=["output"],
+            output_names=output_names,
             dynamo=True,
             dynamic_shapes=({0: torch.export.Dim("batch")},),
             external_data=False,

@@ -1,5 +1,7 @@
 """Models shared by inference runners."""
 
+from collections import OrderedDict
+
 import torch
 from torch import nn
 
@@ -41,3 +43,31 @@ class CNN(nn.Module):
 
     def forward(self, inputs: torch.Tensor) -> torch.Tensor:
         return self.layers(inputs)
+
+
+class DebugMLP(nn.Module):
+    """Five named stages for intermediate-activation localization."""
+
+    input_shape = (16,)
+    output_size = 4
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.layers = nn.Sequential(OrderedDict([
+            ("linear_1", nn.Linear(16, 32, device="cpu")),
+            ("relu_1", nn.ReLU()),
+            ("linear_2", nn.Linear(32, 32, device="cpu")),
+            ("relu_2", nn.ReLU()),
+            ("linear_3", nn.Linear(32, self.output_size, device="cpu")),
+        ]))
+
+    def forward(self, inputs: torch.Tensor) -> torch.Tensor:
+        return self.layers(inputs)
+
+    def activations(self, inputs: torch.Tensor) -> dict[str, torch.Tensor]:
+        """Return each stage's output in execution order."""
+        outputs = {}
+        for name, layer in self.layers.named_children():
+            inputs = layer(inputs)
+            outputs[name] = inputs
+        return outputs
